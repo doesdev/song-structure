@@ -1,6 +1,6 @@
 {
   "name": "song-structure",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Get rough idea on potential song structures from the CLI",
   "main": "index.js",
   "scripts": {
@@ -28,6 +28,7 @@
   },
   "homepage": "https://github.com/doesdev/song-structure#readme",
   "dependencies": {
-    "hare-niemeyer": "^2.0.0"
+    "hare-niemeyer": "^2.0.0",
+    "prompts": "^2.4.1"
   }
 }

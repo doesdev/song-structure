@@ -9,12 +9,11 @@ Currently it simply prompts for the number of beats in the song, desired structu
 
 From there it will print (roughly) how many beats each part should get. Now, it doesn't yet take into account how many beats there are per measure, which is really important when dividing up a song. It also doesn't attempt to deal with odd numbers of beats.
 
+# Usage
 ```sh
 # Install globally
 $ npm install --global song-structure
 ```
-
-# Usage
 
 ```sh
 song-structure # then follow the prompts

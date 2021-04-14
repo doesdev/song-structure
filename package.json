@@ -1,0 +1,33 @@
+{
+  "name": "song-structure",
+  "version": "1.0.0",
+  "description": "Get rough idea on potential song structures from the CLI",
+  "main": "index.js",
+  "scripts": {
+    "test": "mvt -v"
+  },
+  "bin": {
+    "song-structure": "index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/doesdev/song-structure.git"
+  },
+  "keywords": [
+    "music",
+    "song",
+    "structure",
+    "verse",
+    "chorus",
+    "bridge"
+  ],
+  "author": "Andrew Carpenter",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/doesdev/song-structure/issues"
+  },
+  "homepage": "https://github.com/doesdev/song-structure#readme",
+  "dependencies": {
+    "hare-niemeyer": "^2.0.0"
+  }
+}

@@ -4,13 +4,13 @@
 const prompts = require('prompts')
 const hareNiemeyer = require('hare-niemeyer')
 
-const CAPTURE_MEASURES = false
+const CAPTURE_MEASURES = true
 const END = Symbol('end')
 const PARTS = {
   Intro: 1,
   Chorus: 2,
   Verse: 4,
-  Bridge: 2,
+  Bridge: 3,
   Outro: 1
 }
 
@@ -22,7 +22,7 @@ const onState = (state) => {
 }
 
 const main = async () => {
-  const { beats } = await prompts([
+  const { beats, bpMeasure } = await prompts([
     {
       type: 'number',
       name: 'beats',
@@ -31,7 +31,7 @@ const main = async () => {
     },
     {
       type: CAPTURE_MEASURES ? 'number' : null,
-      name: 'measures',
+      name: 'bpMeasure',
       message: 'How many beats are there per measure?',
       onState
     }
@@ -67,9 +67,6 @@ const main = async () => {
 
   structure.pop()
 
-  console.log(beats)
-  console.log(structure)
-
   const counts = structure.reduce((out, p) => {
     out[p] = (out[p] || 0) + 1
     return out
@@ -88,10 +85,19 @@ const main = async () => {
     return partCount
   })
 
-  const result = hareNiemeyer(processed, beats)
+  const rawMeasures = Math.floor(beats / bpMeasure)
+  // const remainder = rawMeasures % 2
+  // const measures = rawMeasures - remainder
+  const measures = rawMeasures
+  const results = hareNiemeyer(processed, measures)
+
   numbered.forEach((p) => {
-    console.log(`${p}: ${result[p]} beats`)
+    console.log(`${p}: ${results[p]} measures, ${results[p] * bpMeasure} beats`)
   })
+
+  // const fade = (beats - (measures * bpMeasure)) + (remainder * bpMeasure)
+  const fade = beats - (measures * bpMeasure)
+  if (fade) console.log(`Fade: ${fade} beats`)
 }
 
 main().catch((err) => {

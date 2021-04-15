@@ -1,6 +1,6 @@
 {
   "name": "song-structure",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Get rough idea on potential song structures from the CLI",
   "main": "index.js",
   "scripts": {

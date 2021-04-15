@@ -2,6 +2,8 @@
 
 > Get rough idea on potential song structures from the CLI
 
+![example](example.gif)
+
 ## Structuring music can be hard, this aims to ease it a tiny bit
 This isn't planned to be an active project, unless there is much interest in it then it probably won't ever be much more than it is.
 

@@ -2,20 +2,17 @@
 
 > Get rough idea on potential song structures from the CLI
 
+[songstructure.doesdev.com](https://songstructure.doesdev.com/)
+------
+
 ![example](example.gif)
 
 ## Structuring music can be hard, this aims to ease it a tiny bit
-This isn't planned to be an active project, unless there is much interest in it then it probably won't ever be much more than it is.
+This is a little utility that prompts for the number of beats in the song, beats per measure, desired structure (Intro, Verse, Chorus, Verse...), then distributes those proportionally using pre-set weights for each part type and provides those recommendations.
 
-Currently it simply prompts for the number of beats in the song, beats per measure, desired structure (Intro, Verse, Chorus, Verse...), then distributes those in a naive manner using a [Hare-Niemeyer](https://github.com/juliuste/hare-niemeyer) algorithm and pre-set proportions for each part type.
+From there it will print a suggested number of measures and beats each part should get.
 
-From there it will print (roughly) how many measures and beats each part should get. It doesn't elegantly deal with odd numbers of measures nor does it handle "draws" well.
-
-That is, in some instances you'll see choruses with differing numbers of measures, which is pretty much never correct. Rather, what should happen is those should be re-apportioned to more flexible part types like the bridge or outro.
-
-In regards to odd numbers, it is less common to have odd numbers of measures in verses and certainly in choruses, but this doesn't deal with those scenarios yet.
-
-Pull requests are very welcome!
+Of course music isn't a simple formula, so consider this just some rough suggestions.
 
 # Usage
 ```sh

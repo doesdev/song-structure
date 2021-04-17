@@ -1,106 +1,72 @@
-#! /usr/bin/env node
 'use strict'
 
-const prompts = require('prompts')
-const hareNiemeyer = require('hare-niemeyer')
-
-const CAPTURE_MEASURES = true
-const END = Symbol('end')
 const PARTS = {
-  Intro: 1,
-  Chorus: 2,
-  Verse: 4,
-  Bridge: 3,
-  Outro: 1
+  Intro: { weight: 1, even: false, spillRank: 4, balance: false },
+  Chorus: { weight: 2, even: true, spillRank: 6, balance: true },
+  Verse: { weight: 4, even: true, spillRank: 5, balance: true },
+  Bridge: { weight: 2.5, even: true, spillRank: 1, balance: false },
+  Outro: { weight: 1, even: false, spillRank: 3, balance: false },
+  'Short Break': { weight: 1, even: true, spillRank: 1, balance: false },
+  'Long Break': { weight: 3, even: true, spillRank: 2, balance: false }
 }
 
-const onState = (state) => {
-  if (!state.aborted) return
-  process.stdout.write('\x1B[?25h')
-  process.stdout.write('\n')
-  process.exit(1)
-}
+const rankedEntries = Object.entries(PARTS).sort((a, b) => {
+  return a[1].spillRank - b[1].spillRank
+})
 
-const main = async () => {
-  const { beats, bpMeasure } = await prompts([
-    {
-      type: 'number',
-      name: 'beats',
-      message: 'How many beats are in the song?',
-      onState
-    },
-    {
-      type: CAPTURE_MEASURES ? 'number' : null,
-      name: 'bpMeasure',
-      message: 'How many beats are there per measure?',
-      onState
+const suggestedStructure = (structure = [], beats, bpMeasure) => {
+  if (!structure.length) return []
+  if (!beats || !bpMeasure) return structure
+
+  const weightSum = structure.reduce((accum, p) => accum + PARTS[p.part].weight, 0)
+  const { out, spill } = structure.reduce((obj, { part }) => {
+    const weight = PARTS[part].weight
+    const rawVal = (beats * (weight / weightSum)) / bpMeasure
+    const remainder = PARTS[part].even ? rawVal % 2 : 0
+    const val = Math.floor(rawVal - remainder)
+
+    obj.spill += rawVal - val
+    obj.out.push({ part, measures: val, beats: val * bpMeasure })
+
+    return obj
+  }, { out: [], spill: 0 })
+
+  let overflow = Math.floor(spill)
+  const fade = Math.floor((spill - overflow) * bpMeasure)
+
+  while (overflow > 0) {
+    const byType = out.reduce((obj, partObj) => {
+      obj[partObj.part] = obj[partObj.part] || []
+      obj[partObj.part].push(partObj)
+      return obj
+    }, {})
+
+    const assignMeasures = (part, addMeasures) => {
+      part.measures += addMeasures
+      part.beats += (addMeasures * bpMeasure)
+      overflow -= addMeasures
     }
-  ])
 
-  const structure = []
+    rankedEntries.slice().forEach(([key, { even, balance }]) => {
+      const addMeasures = even ? 2 : 1
+      const typeParts = byType[key] || []
 
-  while (structure[structure.length - 1] !== END) {
-    const hasParts = structure.length
-    const prefix = hasParts ? 'Next' : 'First'
-    const suffix = hasParts && ` [${structure.join(', ')}]`
-    const message = `${prefix} song part${suffix || ''}`
-    const final = { title: '(done)', value: END }
+      if (overflow < addMeasures) return
 
-    const choices = Object.keys(PARTS).map((k) => {
-      return { value: k, title: k }
-    }).concat(final)
+      if (balance) {
+        if ((typeParts.length * addMeasures) > overflow) return
+        while (typeParts.length) assignMeasures(typeParts.shift(), addMeasures)
+        return
+      }
 
-    const { part } = await prompts({
-      type: 'select',
-      name: 'part',
-      initial: 0,
-      message,
-      choices,
-      onState
+      const part = typeParts.shift()
+      if (part) assignMeasures(part, addMeasures)
     })
-
-    process.stdout.moveCursor(0, -1)
-    process.stdout.clearLine(1)
-
-    structure.push(part)
   }
 
-  structure.pop()
+  if (fade) out.push({ part: 'Fade', beats: fade })
 
-  const counts = structure.reduce((out, p) => {
-    out[p] = (out[p] || 0) + 1
-    return out
-  }, {})
-
-  const current = {}
-  const processed = {}
-  const numbered = structure.map((p) => {
-    if (counts[p] < 2) {
-      processed[p] = PARTS[p]
-      return p
-    }
-
-    const partCount = `${p} ${(current[p] = (current[p] || 0) + 1)}`
-    processed[partCount] = PARTS[p]
-    return partCount
-  })
-
-  const rawMeasures = Math.floor(beats / bpMeasure)
-  // const remainder = rawMeasures % 2
-  // const measures = rawMeasures - remainder
-  const measures = rawMeasures
-  const results = hareNiemeyer(processed, measures)
-
-  numbered.forEach((p) => {
-    console.log(`${p}: ${results[p]} measures, ${results[p] * bpMeasure} beats`)
-  })
-
-  // const fade = (beats - (measures * bpMeasure)) + (remainder * bpMeasure)
-  const fade = beats - (measures * bpMeasure)
-  if (fade) console.log(`Fade: ${fade} beats`)
+  return out
 }
 
-main().catch((err) => {
-  console.error(err)
-  process.exit(1)
-})
+module.exports = { suggestedStructure, partsDefinition: PARTS }
